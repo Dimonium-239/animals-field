@@ -5,9 +5,12 @@ import java.util.*;
 public class World {
 
     public static void main(String[] args) {
-        OptionsParser oParser = new OptionsParser();
-        MoveDirection[] directions = oParser.parse(args);
-        run(directions);
+        MoveDirection[] directions = new OptionsParser().parse(args);
+        IWorldMap map = new RectangularMap(10, 5);
+        map.place(new Animal(map));
+        map.place(new Animal(map, new Vector2D(3,2)));
+        map.run(directions);
+
     }
 
     static void run(MoveDirection[] args) {

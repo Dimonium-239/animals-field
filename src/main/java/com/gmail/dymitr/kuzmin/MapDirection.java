@@ -4,25 +4,25 @@ public enum MapDirection {
     NORTH {
         @Override
         public String toString() {
-            return "North";
+            return "∧";
         }
     },
     EAST {
         @Override
         public String toString() {
-            return "East";
+            return ">";
         }
     },
     SOUTH {
         @Override
         public String toString() {
-            return "South";
+            return "v";
         }
     },
     WEST {
         @Override
         public String toString() {
-            return "West";
+            return "<";
         }
     };
 
