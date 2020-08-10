@@ -1,14 +1,14 @@
 package com.gmail.dymitr.kuzmin;
 
-public class Animal {
+public class Animal extends AbstractWorldMapElement{
+
     private MapDirection mapDirection = MapDirection.NORTH;
-    private Vector2D position = new Vector2D(2, 2);
     private IWorldMap map;
 
-    public Animal() {
-    }
+    public Animal() {}
 
     public Animal(IWorldMap map) {
+        position = new Vector2D(2, 2);
         this.map = map;
     }
 
@@ -17,13 +17,14 @@ public class Animal {
         this.map = map;
     }
 
-    public Vector2D getPosition() {
-        return position;
-    }
-
     @Override
     public String toString() {
         return this.mapDirection.toString();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        return object instanceof Animal && ((Animal) object).getPosition().equals(this.position);
     }
 
     public void move(MoveDirection direction) {
