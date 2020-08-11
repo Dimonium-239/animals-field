@@ -1,20 +1,22 @@
 package com.gmail.dymitr.kuzmin;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
 public class OptionsParser {
-    public MoveDirection[] parse(String[] args) {
-        //@formatter:off
-        return Arrays.stream(args).map(x -> {
-            switch (x){
-                case "f": return MoveDirection.FORWARD;
-                case "b": return MoveDirection.BACKWARD;
-                case "r": return MoveDirection.RIGHT;
-                case "l": return MoveDirection.LEFT;
-                default: return null;
+    public MoveDirection[] parse(String[] args) throws IllegalArgumentException {
+        ArrayList<MoveDirection> moveDirections = new ArrayList<>();
+
+        for (String arg : args){
+            switch (arg) {
+                case "f" -> moveDirections.add(MoveDirection.FORWARD);
+                case "b" -> moveDirections.add(MoveDirection.BACKWARD);
+                case "r" -> moveDirections.add(MoveDirection.RIGHT);
+                case "l" -> moveDirections.add(MoveDirection.LEFT);
+                default -> throw new IllegalArgumentException(arg + " is not legal move specification");
             }
-        }).toArray(MoveDirection[]::new);
+        }
+
+        return moveDirections.toArray(MoveDirection[]::new);
     }
-    //@formatter:on
 }
 

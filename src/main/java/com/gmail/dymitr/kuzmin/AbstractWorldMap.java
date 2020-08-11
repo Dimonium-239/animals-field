@@ -1,12 +1,13 @@
 package com.gmail.dymitr.kuzmin;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractWorldMap implements IWorldMap{
 
-    protected HashSet<Animal> animals = new HashSet<>();
+    protected HashMap<Vector2D, Animal> animals = new HashMap<>();
 
     protected MapVisualizer visualizer = new MapVisualizer(this);
 
@@ -15,7 +16,8 @@ public abstract class AbstractWorldMap implements IWorldMap{
 
     @Override
     public boolean place(Animal animal) {
-        return animals.add(animal);
+        animals.put(animal.getPosition(), animal);
+        return true;
     }
 
     @Override
@@ -30,14 +32,14 @@ public abstract class AbstractWorldMap implements IWorldMap{
 
     @Override
     public void run(MoveDirection[] directions) {
-        Iterator<Animal> animalIterator = animals.iterator();
+        Iterator<Animal> animalIterator = animals.values().iterator();
 
         Window w = new Window();
         w.createWindow();
 
         for (MoveDirection direction : directions) {
             if (!animalIterator.hasNext())
-                animalIterator = animals.iterator();
+                animalIterator = animals.values().iterator();
             animalIterator.next().move(direction);
 
             w.updateLabel(this.toString());

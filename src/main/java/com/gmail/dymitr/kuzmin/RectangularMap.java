@@ -16,8 +16,8 @@ public class RectangularMap extends AbstractWorldMap {
 
     @Override
     public Object objectAt(Vector2D position) {
-        for (Animal animal : animals)
-            if (animal.getPosition().equals(position)) return animal;
+        if (animals.containsKey(position))
+            return animals.get(position);
         return null;
     }
 }

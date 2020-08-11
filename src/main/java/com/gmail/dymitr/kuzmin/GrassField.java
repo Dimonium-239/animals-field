@@ -1,59 +1,73 @@
 package com.gmail.dymitr.kuzmin;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
-public class GrassField extends AbstractWorldMap{
-    private HashSet<Grass> grasses = new HashSet<>();
+public class GrassField extends AbstractWorldMap {
+    private HashMap<Vector2D, Grass> grasses = new HashMap<>();
 
-    public GrassField(int grassQuantity){
+    public GrassField(int grassQuantity) {
         generateGrass(grassQuantity);
-        initCorners();
     }
 
-    private void initCorners(){
-        lowerLeft = grassLowerLeft();
-        upperRight = grassUpperRight();
+    private void updateCorners(Vector2D position) {
+        if (upperRight == null)
+            upperRight = position;
+        else upperRight = upperRight.upperRight(position);
+        if (lowerLeft == null)
+            lowerLeft = position;
+        else  lowerLeft = lowerLeft.lowerLeft(position);
     }
 
-    private void generateGrass(int grassQuantity){
+    private void generateGrass(int grassQuantity) {
         Random rand = new Random();
-        while (grasses.size() != grassQuantity){
+        while (grasses.size() != grassQuantity) {
             Vector2D newPosition = new Vector2D(rand.nextInt((int) (Math.sqrt(grassQuantity) + 1)),
                     rand.nextInt((int) (Math.sqrt(grassQuantity) + 1)));
-            if (!isOccupied(newPosition)) {
-                grasses.add(new Grass(newPosition.x, newPosition.y));
-            }
+            if (!isOccupied(newPosition))
+                grasses.put(new Vector2D(newPosition.x, newPosition.y), new Grass(newPosition.x, newPosition.y));
         }
     }
 
-    private void eatGrass(Vector2D position){
+    private void eatGrass(Vector2D position) {
         int grassQuantity = grasses.size();
-        for(Grass grass : grasses)
-            if (grass.getPosition().equals(position)) {
-                grasses.remove(grass);
-                break;
-            }
+        grasses.remove(position);
         generateGrass(grassQuantity);
-        initCorners();
     }
 
     @Override
+    public boolean place(Animal animal) {
+        if (!animals.containsKey(animal.getPosition())) {
+            animals.put(animal.getPosition(), animal);
+            return true;
+        }
+        return false;
+    }
+
+
+    @Override
     public void run(MoveDirection[] directions) {
-        Iterator<Animal> animalIterator = animals.iterator();
+        ArrayList<Animal> valueList = new ArrayList<>(animals.values());
 
         Window w = new Window();
         w.createWindow();
 
+        Iterator<Animal> valueIterator = valueList.iterator();
         for (MoveDirection direction : directions) {
-            if (!animalIterator.hasNext())
-                animalIterator = animals.iterator();
-            Animal currentAnimal = animalIterator.next();
+            if (!valueIterator.hasNext())
+                valueIterator = valueList.iterator();
+            Animal currentAnimal = valueIterator.next();
+
+            Vector2D oldPosition = currentAnimal.getPosition();
+
             currentAnimal.move(direction);
             eatGrass(currentAnimal.getPosition());
+
+            updateCorners(currentAnimal.getPosition());
+
+            animals.remove(oldPosition);
+            animals.put(currentAnimal.getPosition(), currentAnimal);
 
             w.updateLabel(this.toString());
             //System.out.println(this.toString());
@@ -68,27 +82,23 @@ public class GrassField extends AbstractWorldMap{
 
     @Override
     public boolean canMoveTo(Vector2D position) {
-        return !isOccupiedByAnimal(position);
+        return !animals.containsKey(position);
     }
 
     @Override
     public Object objectAt(Vector2D position) {
-        for (Animal animal : animals)
-            if (animal.getPosition().equals(position))
-                return animal;
-        for (Grass grass : grasses)
-            if (grass.getPosition().equals(position))
-                return grass;
+        updateCorners(position);
+        if (animals.containsKey(position)) {
+            return animals.get(position);
+        }
+        if (grasses.containsKey(position)) {
+            return grasses.get(position);
+        }
         return null;
     }
 
-    private boolean isOccupiedByAnimal(Vector2D position){
-        for (Animal animal : animals)
-            if (animal.getPosition().equals(position)) return true;
-        return false;
-    }
-
-    private Vector2D grassUpperRight(){
+    /*
+    private Vector2D grassUpperRight() {
         if (grasses.size() == 0 && animals.size() == 0) return null;
 
         Iterator<Animal> animalIterator = animals.iterator();
@@ -99,8 +109,7 @@ public class GrassField extends AbstractWorldMap{
         if (animalIterator.hasNext()) {
             Animal currentAnimal = animalIterator.next();
             upperRightPoint = currentAnimal.getPosition().upperRight(currentAnimal.getPosition());
-        }
-        else {
+        } else {
             Grass currentGrass = grassIterator.next();
             upperRightPoint = currentGrass.getPosition().upperRight(currentGrass.getPosition());
         }
@@ -114,7 +123,8 @@ public class GrassField extends AbstractWorldMap{
         return upperRightPoint;
     }
 
-    private Vector2D grassLowerLeft(){
+    @Deprecated
+    private Vector2D grassLowerLeft() {
         if (grasses.size() == 0 && animals.size() == 0) return null;
 
         Iterator<Animal> animalIterator = animals.iterator();
@@ -125,8 +135,7 @@ public class GrassField extends AbstractWorldMap{
         if (animalIterator.hasNext()) {
             Animal currentAnimal = animalIterator.next();
             lowerLeftPoint = currentAnimal.getPosition().lowerLeft(currentAnimal.getPosition());
-        }
-        else {
+        } else {
             Grass currentGrass = grassIterator.next();
             lowerLeftPoint = currentGrass.getPosition().lowerLeft(currentGrass.getPosition());
         }
@@ -139,5 +148,5 @@ public class GrassField extends AbstractWorldMap{
 
         return lowerLeftPoint;
     }
-
+    */
 }

@@ -9,8 +9,4 @@ public abstract class AbstractWorldMapElement implements IMapElement{
         return position;
     }
 
-    @Override
-    public int hashCode(){
-        return position.hashCode();
-    }
 }
