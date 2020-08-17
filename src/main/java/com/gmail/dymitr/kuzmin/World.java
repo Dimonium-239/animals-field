@@ -6,9 +6,9 @@ public class World {
         MoveDirection[] directions;
         try {
             directions = new OptionsParser().parse(args);
-            IWorldMap map = new GrassField(15);
-            map.place(new Animal(map, new Vector2D(0,0)));
-            map.place(new Animal(map, new Vector2D(3,2)));
+            IWorldMap map = new GrassField(10);
+            map.place(new Animal(map, new Vector2D(2,2)));
+            map.place(new Animal(map, new Vector2D(1,1)));
             map.run(directions);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();

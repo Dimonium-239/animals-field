@@ -1,8 +1,11 @@
 package com.gmail.dymitr.kuzmin;
 
+import java.util.ArrayList;
+
 public class Animal extends AbstractWorldMapElement{
 
     private MapDirection mapDirection = MapDirection.NORTH;
+    private ArrayList<IPositionChangeObserver> observers = new ArrayList<>();
     private IWorldMap map;
 
     public Animal() {}
@@ -15,6 +18,19 @@ public class Animal extends AbstractWorldMapElement{
     public Animal(IWorldMap map, Vector2D initialPosition) {
         this.position = initialPosition;
         this.map = map;
+    }
+
+    public void addObserver(IPositionChangeObserver observer){
+        observers.add(observer);
+    }
+
+    public void removeObserver(IPositionChangeObserver observer){
+        observers.remove(observer);
+    }
+
+    public void positionChanged(Vector2D oldPosition, Vector2D newPosition){
+        for (IPositionChangeObserver observer : observers)
+            observer.positionChanged(oldPosition, newPosition);
     }
 
     @Override

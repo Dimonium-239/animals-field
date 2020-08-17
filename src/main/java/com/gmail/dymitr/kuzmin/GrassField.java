@@ -4,20 +4,12 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
-public class GrassField extends AbstractWorldMap {
+public class GrassField extends AbstractWorldMap{
     private HashMap<Vector2D, Grass> grasses = new HashMap<>();
+    protected MapBoundary mapBoundary = new MapBoundary();
 
     public GrassField(int grassQuantity) {
         generateGrass(grassQuantity);
-    }
-
-    private void updateCorners(Vector2D position) {
-        if (upperRight == null)
-            upperRight = position;
-        else upperRight = upperRight.upperRight(position);
-        if (lowerLeft == null)
-            lowerLeft = position;
-        else  lowerLeft = lowerLeft.lowerLeft(position);
     }
 
     private void generateGrass(int grassQuantity) {
@@ -25,13 +17,17 @@ public class GrassField extends AbstractWorldMap {
         while (grasses.size() != grassQuantity) {
             Vector2D newPosition = new Vector2D(rand.nextInt((int) (Math.sqrt(grassQuantity) + 1)),
                     rand.nextInt((int) (Math.sqrt(grassQuantity) + 1)));
-            if (!isOccupied(newPosition))
-                grasses.put(new Vector2D(newPosition.x, newPosition.y), new Grass(newPosition.x, newPosition.y));
+            if (!isOccupied(newPosition)){
+                Grass newGrass = new Grass(newPosition.x, newPosition.y);
+                grasses.put(new Vector2D(newPosition.x, newPosition.y), newGrass);
+                mapBoundary.place(newGrass);
+            }
         }
     }
 
     private void eatGrass(Vector2D position) {
         int grassQuantity = grasses.size();
+        mapBoundary.remove(grasses.get(position));
         grasses.remove(position);
         generateGrass(grassQuantity);
     }
@@ -39,7 +35,12 @@ public class GrassField extends AbstractWorldMap {
     @Override
     public boolean place(Animal animal) {
         if (!animals.containsKey(animal.getPosition())) {
+            animal.addObserver(this);
+            animal.addObserver(this.mapBoundary);
             animals.put(animal.getPosition(), animal);
+            mapBoundary.place(animal);
+            upperRight = mapBoundary.upperRight();
+            lowerLeft = mapBoundary.lowerLeft();
             return true;
         }
         return false;
@@ -61,13 +62,20 @@ public class GrassField extends AbstractWorldMap {
 
             Vector2D oldPosition = currentAnimal.getPosition();
 
+            mapBoundary.remove(currentAnimal);
+
             currentAnimal.move(direction);
             eatGrass(currentAnimal.getPosition());
 
-            updateCorners(currentAnimal.getPosition());
+            mapBoundary.place(currentAnimal);
 
-            animals.remove(oldPosition);
-            animals.put(currentAnimal.getPosition(), currentAnimal);
+            positionChanged(oldPosition, currentAnimal.getPosition());
+
+            upperRight = mapBoundary.upperRight();
+            lowerLeft = mapBoundary.lowerLeft();
+
+            System.out.println(upperRight + " | " + lowerLeft);
+            System.out.println(mapBoundary.entitiesX);
 
             w.updateLabel(this.toString());
             //System.out.println(this.toString());
@@ -87,7 +95,6 @@ public class GrassField extends AbstractWorldMap {
 
     @Override
     public Object objectAt(Vector2D position) {
-        updateCorners(position);
         if (animals.containsKey(position)) {
             return animals.get(position);
         }
@@ -96,57 +103,4 @@ public class GrassField extends AbstractWorldMap {
         }
         return null;
     }
-
-    /*
-    private Vector2D grassUpperRight() {
-        if (grasses.size() == 0 && animals.size() == 0) return null;
-
-        Iterator<Animal> animalIterator = animals.iterator();
-        Iterator<Grass> grassIterator = grasses.iterator();
-
-        Vector2D upperRightPoint;
-
-        if (animalIterator.hasNext()) {
-            Animal currentAnimal = animalIterator.next();
-            upperRightPoint = currentAnimal.getPosition().upperRight(currentAnimal.getPosition());
-        } else {
-            Grass currentGrass = grassIterator.next();
-            upperRightPoint = currentGrass.getPosition().upperRight(currentGrass.getPosition());
-        }
-        for (Animal currentAnimal : animals)
-            upperRightPoint = upperRightPoint.upperRight(currentAnimal.getPosition());
-        for (Grass currentGrass : grasses)
-            upperRightPoint = upperRightPoint.upperRight(currentGrass.getPosition());
-
-        upperRightPoint = upperRightPoint.add(new Vector2D(1, 1));
-
-        return upperRightPoint;
-    }
-
-    @Deprecated
-    private Vector2D grassLowerLeft() {
-        if (grasses.size() == 0 && animals.size() == 0) return null;
-
-        Iterator<Animal> animalIterator = animals.iterator();
-        Iterator<Grass> grassIterator = grasses.iterator();
-
-        Vector2D lowerLeftPoint;
-
-        if (animalIterator.hasNext()) {
-            Animal currentAnimal = animalIterator.next();
-            lowerLeftPoint = currentAnimal.getPosition().lowerLeft(currentAnimal.getPosition());
-        } else {
-            Grass currentGrass = grassIterator.next();
-            lowerLeftPoint = currentGrass.getPosition().lowerLeft(currentGrass.getPosition());
-        }
-        for (Animal currentAnimal : animals)
-            lowerLeftPoint = lowerLeftPoint.lowerLeft(currentAnimal.getPosition());
-        for (Grass currentGrass : grasses)
-            lowerLeftPoint = lowerLeftPoint.lowerLeft(currentGrass.getPosition());
-
-        lowerLeftPoint = lowerLeftPoint.subtract(new Vector2D(1, 1));
-
-        return lowerLeftPoint;
-    }
-    */
 }
